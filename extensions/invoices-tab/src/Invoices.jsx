@@ -3,7 +3,7 @@ import {render} from 'preact';
 import {useEffect, useState} from 'preact/hooks';
 
 const BACKEND_URL =
-  'https://wireless-pole-hill-joint.trycloudflare.com/api/invoices';
+  'https://invoice-tab-shopify.vercel.app/api/invoices/api/invoices';
 
 export default async () => {
   render(<Extension />, document.body);
