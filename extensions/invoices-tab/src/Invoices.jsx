@@ -3,7 +3,7 @@ import {render} from 'preact';
 import {useEffect, useState} from 'preact/hooks';
 
 const BACKEND_URL =
-  'https://malpractice-address-skirts-casa.trycloudflare.com/api/invoices';
+  'https://wireless-pole-hill-joint.trycloudflare.com/api/invoices';
 
 export default async () => {
   render(<Extension />, document.body);
@@ -21,10 +21,12 @@ function Extension() {
   });
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     async function loadInvoices() {
       try {
+        setError('');
         const token = await shopify.sessionToken.get();
 
         const response = await fetch(BACKEND_URL, {
@@ -34,9 +36,21 @@ function Extension() {
         });
 
         const invoiceData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            typeof invoiceData.error === 'string'
+              ? invoiceData.error
+              : `Invoice request failed with ${response.status}`,
+          );
+        }
+
         setData(invoiceData);
       } catch (error) {
         console.error('Failed to load invoices', error);
+        setError(
+          error instanceof Error ? error.message : 'Failed to load invoices',
+        );
       } finally {
         setLoading(false);
       }
@@ -45,10 +59,60 @@ function Extension() {
     loadInvoices();
   }, []);
 
+  function getBalanceValue(invoice) {
+    return Number(String(invoice.balance).replace(/[^\d.]/g, '')) || 0;
+  }
+
+  function canPayInvoice(invoice) {
+    const status = String(invoice.status).toUpperCase();
+
+    return getBalanceValue(invoice) > 0 && !['PAID', 'VOIDED'].includes(status);
+  }
+
+  function viewInvoice(invoice) {
+    navigation.navigate(invoice.statusPageUrl || `/orders/${invoice.legacyResourceId}`);
+  }
+
+  async function downloadInvoice(invoice) {
+    const token = await shopify.sessionToken.get();
+    const url = `${BACKEND_URL}?downloadOrderId=${encodeURIComponent(invoice.id)}`;
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      shopify.toast.show('Invoice download is not available');
+      return;
+    }
+
+    navigation.navigate(url);
+  }
+
+  function payInvoice(invoice) {
+    if (!canPayInvoice(invoice)) {
+      shopify.toast.show('This invoice has no balance due');
+      return;
+    }
+
+    navigation.navigate(invoice.statusPageUrl || `/orders/${invoice.legacyResourceId}`);
+  }
+
   if (loading) {
     return (
       <s-page heading="Invoices">
         <s-text>Loading invoices...</s-text>
+      </s-page>
+    );
+  }
+
+  if (error) {
+    return (
+      <s-page heading="Invoices">
+        <s-banner tone="critical" heading="Invoices could not be loaded">
+          <s-text>{error}</s-text>
+        </s-banner>
       </s-page>
     );
   }
@@ -85,6 +149,10 @@ function Extension() {
             <s-text type="strong">Download</s-text>
             <s-text type="strong">Pay</s-text>
 
+            {data.invoices.length === 0 && (
+              <s-text>No invoices found for this customer.</s-text>
+            )}
+
             {data.invoices.map((invoice) => (
               <>
                 <s-text>{invoice.type}</s-text>
@@ -94,9 +162,17 @@ function Extension() {
                 <s-text>{invoice.status}</s-text>
                 <s-text>{invoice.amount}</s-text>
                 <s-text>{invoice.balance}</s-text>
-                <s-button>View</s-button>
-                <s-button>Download</s-button>
-                <s-button variant="primary">Pay</s-button>
+                <s-button onClick={() => viewInvoice(invoice)}>View</s-button>
+                <s-button onClick={() => downloadInvoice(invoice)}>
+                  Download
+                </s-button>
+                <s-button
+                  variant="primary"
+                  disabled={!canPayInvoice(invoice)}
+                  onClick={() => payInvoice(invoice)}
+                >
+                  Pay
+                </s-button>
               </>
             ))}
           </s-grid>
