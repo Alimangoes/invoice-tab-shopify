@@ -219,6 +219,13 @@ export async function action() {
 }
 
 export async function loader({request}: LoaderFunctionArgs) {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders,
+    });
+  }
+
   const authorizationHeader = request.headers.get('authorization');
   const token = authorizationHeader?.replace('Bearer ', '');
 
