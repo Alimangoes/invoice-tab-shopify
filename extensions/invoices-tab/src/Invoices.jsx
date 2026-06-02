@@ -90,29 +90,13 @@ function Extension() {
     navigation.navigate(url);
   }
 
-  async function payInvoice(invoice) {
+  function payInvoice(invoice) {
     if (!canPayInvoice(invoice)) {
       shopify.toast.show('This invoice has no balance due');
       return;
     }
 
-    const token = await shopify.sessionToken.get();
-    const url = `${BACKEND_URL}?checkoutOrderId=${encodeURIComponent(invoice.id)}`;
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const checkout = await response.json();
-
-    if (!response.ok || !checkout.checkoutUrl) {
-      shopify.toast.show(
-        checkout.error || 'Checkout is not available for this invoice',
-      );
-      return;
-    }
-
-    navigation.navigate(checkout.checkoutUrl);
+    navigation.navigate(invoice.statusPageUrl || `/orders/${invoice.legacyResourceId}`);
   }
 
   if (loading) {
