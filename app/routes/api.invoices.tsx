@@ -411,6 +411,7 @@ export async function loader({request}: LoaderFunctionArgs) {
       amount: `${amount.currencyCode} ${amount.amount}`,
       balance: `${balance.currencyCode} ${balanceAmount}`,
       statusPageUrl: order.statusPageUrl,
+      checkoutUrl: order.statusPageUrl,
     };
   });
 

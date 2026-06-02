@@ -96,7 +96,12 @@ function Extension() {
       return;
     }
 
-    navigation.navigate(invoice.statusPageUrl || `/orders/${invoice.legacyResourceId}`);
+    const checkoutUrl =
+      invoice.checkoutUrl ||
+      invoice.statusPageUrl ||
+      `/orders/${invoice.legacyResourceId}`;
+
+    navigation.navigate(checkoutUrl);
   }
 
   if (loading) {
