@@ -395,6 +395,10 @@ export async function loader({request}: LoaderFunctionArgs) {
   const invoices = orderNodes.map((order) => {
     const amount = order.totalPriceSet.shopMoney;
     const balance = order.currentTotalPriceSet.shopMoney;
+    const isPaid = ['PAID', 'VOIDED'].includes(
+      String(order.displayFinancialStatus).toUpperCase(),
+    );
+    const balanceAmount = isPaid ? '0.00' : balance.amount;
 
     return {
       id: order.id,
@@ -405,7 +409,7 @@ export async function loader({request}: LoaderFunctionArgs) {
       date: order.createdAt.slice(0, 10),
       status: order.displayFinancialStatus,
       amount: `${amount.currencyCode} ${amount.amount}`,
-      balance: `${balance.currencyCode} ${balance.amount}`,
+      balance: `${balance.currencyCode} ${balanceAmount}`,
       statusPageUrl: order.statusPageUrl,
     };
   });
