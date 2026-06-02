@@ -22,6 +22,9 @@ function Extension() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
   useEffect(() => {
     async function loadInvoices() {
@@ -67,6 +70,47 @@ function Extension() {
     const status = String(invoice.status).toUpperCase();
 
     return getBalanceValue(invoice) > 0 && !['PAID', 'VOIDED'].includes(status);
+  }
+
+  function invoiceMatchesSearch(invoice) {
+    const query = searchQuery.trim().toLowerCase();
+
+    if (!query) {
+      return true;
+    }
+
+    return [
+      invoice.type,
+      invoice.number,
+      invoice.poNumber,
+      invoice.date,
+      invoice.status,
+      invoice.amount,
+      invoice.balance,
+    ]
+      .join(' ')
+      .toLowerCase()
+      .includes(query);
+  }
+
+  function invoiceMatchesDateRange(invoice) {
+    if (fromDate && invoice.date < fromDate) {
+      return false;
+    }
+
+    if (toDate && invoice.date > toDate) {
+      return false;
+    }
+
+    return true;
+  }
+
+  const filteredInvoices = data.invoices.filter((invoice) => {
+    return invoiceMatchesSearch(invoice) && invoiceMatchesDateRange(invoice);
+  });
+
+  function getInputValue(event) {
+    return event.target?.value || '';
   }
 
   function viewInvoice(invoice) {
@@ -142,9 +186,21 @@ function Extension() {
         </s-grid>
 
         <s-grid gridTemplateColumns="2fr 1fr 1fr" gap="base">
-          <s-text-field label="Search product or invoice number" />
-          <s-text-field label="From Date" />
-          <s-text-field label="To Date" />
+          <s-text-field
+            label="Search product or invoice number"
+            value={searchQuery}
+            onInput={(event) => setSearchQuery(getInputValue(event))}
+          />
+          <s-date-field
+            label="From Date"
+            value={fromDate}
+            onInput={(event) => setFromDate(getInputValue(event))}
+          />
+          <s-date-field
+            label="To Date"
+            value={toDate}
+            onInput={(event) => setToDate(getInputValue(event))}
+          />
         </s-grid>
 
         <s-section>
@@ -163,11 +219,11 @@ function Extension() {
             <s-text type="strong">Download</s-text>
             <s-text type="strong">Pay</s-text>
 
-            {data.invoices.length === 0 && (
+            {filteredInvoices.length === 0 && (
               <s-text>No invoices found for this customer.</s-text>
             )}
 
-            {data.invoices.map((invoice) => (
+            {filteredInvoices.map((invoice) => (
               <>
                 <s-text>{invoice.type}</s-text>
                 <s-text>{invoice.number}</s-text>
