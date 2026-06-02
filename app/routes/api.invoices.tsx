@@ -133,6 +133,22 @@ function buildSufioInvoiceUrl(shop: string, order: OrderNode, path: string) {
   return `https://${shop}${path}?${params.toString()}`;
 }
 
+function moneyAmount(value: string) {
+  return Number.parseFloat(value) || 0;
+}
+
+function formatMoney(currencyCode: string, amount: number) {
+  return `${currencyCode} ${amount.toFixed(2)}`;
+}
+
+function daysSince(date: string) {
+  const createdAt = new Date(date).getTime();
+  const today = Date.now();
+  const millisecondsPerDay = 1000 * 60 * 60 * 24;
+
+  return Math.max(0, Math.floor((today - createdAt) / millisecondsPerDay));
+}
+
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Unknown error';
 }
@@ -450,17 +466,44 @@ export async function loader({request}: LoaderFunctionArgs) {
     };
   });
 
-  const totalBalance = invoices.reduce((sum, invoice) => {
-    return sum + Number(invoice.balance.replace(/[^\d.]/g, ''));
-  }, 0);
+  const aging = orderNodes.reduce(
+    (totals, order) => {
+      const isPaid = ['PAID', 'VOIDED'].includes(
+        String(order.displayFinancialStatus).toUpperCase(),
+      );
+      const balance = isPaid
+        ? 0
+        : moneyAmount(order.currentTotalPriceSet.shopMoney.amount);
+      const age = daysSince(order.createdAt);
+
+      if (age <= 30) {
+        totals.days30 += balance;
+      } else if (age <= 60) {
+        totals.days31to60 += balance;
+      } else if (age <= 90) {
+        totals.days61to90 += balance;
+      }
+
+      return totals;
+    },
+    {
+      days61to90: 0,
+      days31to60: 0,
+      days30: 0,
+    },
+  );
+  const currencyCode =
+    orderNodes[0]?.currentTotalPriceSet.shopMoney.currencyCode ?? 'AUD';
+  const totalBalance =
+    aging.days61to90 + aging.days31to60 + aging.days30;
 
   return Response.json(
     {
       aging: {
-        days61to90: '$0.00',
-        days31to60: '$0.00',
-        days30: '$0.00',
-        total: `$${totalBalance.toFixed(2)}`,
+        days61to90: formatMoney(currencyCode, aging.days61to90),
+        days31to60: formatMoney(currencyCode, aging.days31to60),
+        days30: formatMoney(currencyCode, aging.days30),
+        total: formatMoney(currencyCode, totalBalance),
       },
       invoices,
     },

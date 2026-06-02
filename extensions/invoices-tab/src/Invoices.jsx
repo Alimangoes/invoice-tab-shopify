@@ -108,6 +108,10 @@ function Extension() {
   const filteredInvoices = data.invoices.filter((invoice) => {
     return invoiceMatchesSearch(invoice) && invoiceMatchesDateRange(invoice);
   });
+  const hasActiveFilters =
+    searchQuery.trim() !== '' || fromDate !== '' || toDate !== '';
+  const shouldShowNoFilterMatch =
+    hasActiveFilters && data.invoices.length > 0 && filteredInvoices.length === 0;
 
   function getInputValue(event) {
     return event.target?.value || '';
@@ -219,9 +223,7 @@ function Extension() {
             <s-text type="strong">Download</s-text>
             <s-text type="strong">Pay</s-text>
 
-            {filteredInvoices.length === 0 && (
-              <s-text>No invoices found for this customer.</s-text>
-            )}
+            {shouldShowNoFilterMatch && <s-text>No invoice match</s-text>}
 
             {filteredInvoices.map((invoice) => (
               <>
