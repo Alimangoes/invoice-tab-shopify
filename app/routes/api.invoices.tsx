@@ -25,6 +25,9 @@ type OrderNode = {
     nodes: {
       title: string;
       quantity: number;
+      variant?: {
+        id: string;
+      } | null;
       originalTotalSet: {
         shopMoney: Money;
       };
@@ -38,6 +41,21 @@ type OrdersResponse = {
       orders?: {
         nodes: OrderNode[];
       };
+    };
+  };
+  errors?: unknown;
+};
+
+type CartCreateResponse = {
+  data?: {
+    cartCreate?: {
+      cart?: {
+        checkoutUrl?: string;
+      } | null;
+      userErrors?: {
+        field?: string[] | null;
+        message: string;
+      }[];
     };
   };
   errors?: unknown;
@@ -87,6 +105,9 @@ const orderQuery = `
             nodes {
               title
               quantity
+              variant {
+                id
+              }
               originalTotalSet {
                 shopMoney {
                   amount
@@ -96,6 +117,21 @@ const orderQuery = `
             }
           }
         }
+      }
+    }
+  }
+`;
+
+const cartCreateQuery = `
+  #graphql
+  mutation CreateInvoiceCheckout($lines: [CartLineInput!]!) {
+    cartCreate(input: {lines: $lines}) {
+      cart {
+        checkoutUrl
+      }
+      userErrors {
+        field
+        message
       }
     }
   }
@@ -340,6 +376,7 @@ export async function loader({request}: LoaderFunctionArgs) {
   const orderNodes = result.data?.customer?.orders?.nodes ?? [];
   const url = new URL(request.url);
   const downloadOrderId = url.searchParams.get('downloadOrderId');
+  const checkoutOrderId = url.searchParams.get('checkoutOrderId');
 
   console.log('Invoice order query result', {
     shop,
@@ -392,6 +429,87 @@ export async function loader({request}: LoaderFunctionArgs) {
     });
   }
 
+  if (checkoutOrderId) {
+    const order = orderNodes.find((node) => node.id === checkoutOrderId);
+
+    if (!order) {
+      return Response.json(
+        {error: 'Invoice not found for this customer.'},
+        {
+          status: 404,
+          headers: corsHeaders,
+        },
+      );
+    }
+
+    const lines = (order.lineItems?.nodes ?? [])
+      .filter((item) => item.variant?.id)
+      .map((item) => ({
+        merchandiseId: item.variant?.id,
+        quantity: item.quantity,
+      }));
+
+    if (lines.length === 0) {
+      return Response.json(
+        {error: 'No purchasable products were found for this invoice.'},
+        {
+          status: 422,
+          headers: corsHeaders,
+        },
+      );
+    }
+
+    try {
+      const {storefront} = await unauthenticated.storefront(shop);
+      const response = await storefront.graphql(cartCreateQuery, {
+        variables: {
+          lines,
+        },
+      });
+      const checkout = (await response.json()) as CartCreateResponse;
+      const checkoutUrl = checkout.data?.cartCreate?.cart?.checkoutUrl;
+      const userErrors = checkout.data?.cartCreate?.userErrors ?? [];
+
+      if (checkout.errors || userErrors.length > 0 || !checkoutUrl) {
+        console.error('Unable to create invoice checkout', {
+          errors: checkout.errors,
+          userErrors,
+        });
+
+        return Response.json(
+          {
+            error:
+              userErrors[0]?.message ||
+              'Could not create a checkout for this invoice.',
+          },
+          {
+            status: 500,
+            headers: corsHeaders,
+          },
+        );
+      }
+
+      return Response.json(
+        {
+          checkoutUrl,
+        },
+        {
+          headers: corsHeaders,
+        },
+      );
+    } catch (error) {
+      console.error('Unable to create invoice checkout', error);
+
+      return Response.json(
+        {error: `Could not create checkout: ${errorMessage(error)}`},
+        {
+          status: 500,
+          headers: corsHeaders,
+        },
+      );
+    }
+  }
+
   const invoices = orderNodes.map((order) => {
     const amount = order.totalPriceSet.shopMoney;
     const balance = order.currentTotalPriceSet.shopMoney;
@@ -411,7 +529,6 @@ export async function loader({request}: LoaderFunctionArgs) {
       amount: `${amount.currencyCode} ${amount.amount}`,
       balance: `${balance.currencyCode} ${balanceAmount}`,
       statusPageUrl: order.statusPageUrl,
-      checkoutUrl: order.statusPageUrl,
     };
   });
 
