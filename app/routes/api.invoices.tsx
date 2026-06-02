@@ -25,6 +25,9 @@ type OrderNode = {
     nodes: {
       title: string;
       quantity: number;
+      variant?: {
+        legacyResourceId: string;
+      } | null;
       originalTotalSet: {
         shopMoney: Money;
       };
@@ -87,6 +90,9 @@ const orderQuery = `
             nodes {
               title
               quantity
+              variant {
+                legacyResourceId
+              }
               originalTotalSet {
                 shopMoney {
                   amount
@@ -103,6 +109,18 @@ const orderQuery = `
 
 function normalizeShopDomain(shop: string) {
   return shop.replace(/^https?:\/\//, '').replace(/\/$/, '');
+}
+
+function buildOrderCheckoutUrl(shop: string, order: OrderNode) {
+  const cartLines = (order.lineItems?.nodes ?? [])
+    .filter((item) => item.variant?.legacyResourceId)
+    .map((item) => `${item.variant?.legacyResourceId}:${item.quantity}`);
+
+  if (cartLines.length === 0) {
+    return null;
+  }
+
+  return `https://${shop}/cart/${cartLines.join(',')}?checkout`;
 }
 
 function errorMessage(error: unknown) {
@@ -399,6 +417,7 @@ export async function loader({request}: LoaderFunctionArgs) {
       String(order.displayFinancialStatus).toUpperCase(),
     );
     const balanceAmount = isPaid ? '0.00' : balance.amount;
+    const checkoutUrl = isPaid ? null : buildOrderCheckoutUrl(shop, order);
 
     return {
       id: order.id,
@@ -411,6 +430,7 @@ export async function loader({request}: LoaderFunctionArgs) {
       amount: `${amount.currencyCode} ${amount.amount}`,
       balance: `${balance.currencyCode} ${balanceAmount}`,
       statusPageUrl: order.statusPageUrl,
+      checkoutUrl,
     };
   });
 

@@ -96,7 +96,12 @@ function Extension() {
       return;
     }
 
-    navigation.navigate(invoice.statusPageUrl || `/orders/${invoice.legacyResourceId}`);
+    if (!invoice.checkoutUrl) {
+      shopify.toast.show('Checkout is not available for this invoice');
+      return;
+    }
+
+    navigation.navigate(invoice.checkoutUrl);
   }
 
   if (loading) {
