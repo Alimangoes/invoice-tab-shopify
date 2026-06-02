@@ -123,6 +123,16 @@ function buildOrderCheckoutUrl(shop: string, order: OrderNode) {
   return `https://${shop}/cart/${cartLines.join(',')}?checkout`;
 }
 
+function buildSufioInvoiceUrl(shop: string, order: OrderNode, path: string) {
+  const orderNumber = order.name.replace(/^#/, '');
+  const params = new URLSearchParams({
+    id: order.legacyResourceId,
+    number: orderNumber,
+  });
+
+  return `https://${shop}${path}?${params.toString()}`;
+}
+
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Unknown error';
 }
@@ -431,6 +441,12 @@ export async function loader({request}: LoaderFunctionArgs) {
       balance: `${balance.currencyCode} ${balanceAmount}`,
       statusPageUrl: order.statusPageUrl,
       checkoutUrl,
+      sufioViewUrl: buildSufioInvoiceUrl(shop, order, '/apps/sufio/invoice/'),
+      sufioDownloadUrl: buildSufioInvoiceUrl(
+        shop,
+        order,
+        '/apps/sufio/invoice/download/',
+      ),
     };
   });
 
