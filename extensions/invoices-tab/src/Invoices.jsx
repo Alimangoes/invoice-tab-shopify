@@ -184,7 +184,7 @@ function Extension() {
       <s-query-container>
         <s-stack gap="base">
           <s-grid
-            gridTemplateColumns="@container (inline-size < 779px) 1fr, 1fr 1fr 1fr 1fr"
+            gridTemplateColumns="@container (inline-size > 779px) 1fr 1fr 1fr 1fr, 1fr"
             gap="base"
           >
             <InvoiceSummaryCard
@@ -199,47 +199,26 @@ function Extension() {
             <InvoiceSummaryCard label="TOTAL" value={data.aging.total} />
           </s-grid>
 
-          <s-box display="@container (inline-size < 779px) none, auto">
-            <s-grid gridTemplateColumns="2fr 1fr 1fr" gap="base">
-              <s-text-field
-                label="Search product or invoice number"
-                value={searchQuery}
-                onInput={(event) => setSearchQuery(getInputValue(event))}
-              />
-              <s-date-field
-                label="From Date"
-                value={fromDate}
-                onInput={(event) => setFromDate(getInputValue(event))}
-              />
-              <s-date-field
-                label="To Date"
-                value={toDate}
-                onInput={(event) => setToDate(getInputValue(event))}
-              />
-            </s-grid>
-          </s-box>
-
-          <s-box display="@container (inline-size < 779px) auto, none">
-            <s-stack gap="base">
-              <s-text-field
-                label="Search product or invoice number"
-                value={searchQuery}
-                onInput={(event) => setSearchQuery(getInputValue(event))}
-              />
-              <s-grid gridTemplateColumns="1fr 1fr" gap="base">
-                <s-date-field
-                  label="From Date"
-                  value={fromDate}
-                  onInput={(event) => setFromDate(getInputValue(event))}
-                />
-                <s-date-field
-                  label="To Date"
-                  value={toDate}
-                  onInput={(event) => setToDate(getInputValue(event))}
-                />
-              </s-grid>
-            </s-stack>
-          </s-box>
+          <s-grid
+            gridTemplateColumns="@container (inline-size > 779px) 2fr 1fr 1fr, 1fr"
+            gap="base"
+          >
+            <s-text-field
+              label="Search product or invoice number"
+              value={searchQuery}
+              onInput={(event) => setSearchQuery(getInputValue(event))}
+            />
+            <s-date-field
+              label="From Date"
+              value={fromDate}
+              onInput={(event) => setFromDate(getInputValue(event))}
+            />
+            <s-date-field
+              label="To Date"
+              value={toDate}
+              onInput={(event) => setToDate(getInputValue(event))}
+            />
+          </s-grid>
 
           <s-section>
             <s-scroll-box inlineSize="100%">
