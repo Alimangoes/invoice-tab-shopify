@@ -181,194 +181,82 @@ function Extension() {
 
   return (
     <s-page heading="Invoices">
-      <s-query-container>
-        <s-stack gap="base">
-          <s-grid
-            gridTemplateColumns="@container (inline-size < 750px) 1fr 1fr, 1fr 1fr 1fr 1fr"
-            gap="base"
-          >
-            <InvoiceSummaryCard
-              label="61-90 DAYS"
-              value={data.aging.days61to90}
-            />
-            <InvoiceSummaryCard
-              label="31-60 DAYS"
-              value={data.aging.days31to60}
-            />
-            <InvoiceSummaryCard label="30 DAYS" value={data.aging.days30} />
-            <InvoiceSummaryCard label="TOTAL" value={data.aging.total} />
-          </s-grid>
-
-          <s-grid
-            gridTemplateColumns="@container (inline-size < 750px) 1fr, 2fr 1fr 1fr"
-            gap="base"
-          >
-            <s-text-field
-              label="Search product or invoice number"
-              value={searchQuery}
-              onInput={(event) => setSearchQuery(getInputValue(event))}
-            />
-            <s-date-field
-              label="From Date"
-              value={fromDate}
-              onInput={(event) => setFromDate(getInputValue(event))}
-            />
-            <s-date-field
-              label="To Date"
-              value={toDate}
-              onInput={(event) => setToDate(getInputValue(event))}
-            />
-          </s-grid>
-
-          <s-section>
-            <s-box display="@container (inline-size < 750px) none, auto">
-              <InvoiceTable
-                filteredInvoices={filteredInvoices}
-                shouldShowNoFilterMatch={shouldShowNoFilterMatch}
-                canPayInvoice={canPayInvoice}
-                viewInvoice={viewInvoice}
-                downloadInvoice={downloadInvoice}
-                payInvoice={payInvoice}
-              />
-            </s-box>
-
-            <s-box display="@container (inline-size < 750px) auto, none">
-              <InvoiceMobileList
-                filteredInvoices={filteredInvoices}
-                shouldShowNoFilterMatch={shouldShowNoFilterMatch}
-                canPayInvoice={canPayInvoice}
-                viewInvoice={viewInvoice}
-                downloadInvoice={downloadInvoice}
-                payInvoice={payInvoice}
-              />
-            </s-box>
-          </s-section>
-        </s-stack>
-      </s-query-container>
-    </s-page>
-  );
-}
-
-function InvoiceTable({
-  filteredInvoices,
-  shouldShowNoFilterMatch,
-  canPayInvoice,
-  viewInvoice,
-  downloadInvoice,
-  payInvoice,
-}) {
-  return (
-    <s-grid
-      gridTemplateColumns="1fr 1fr 2fr 1fr 1fr 1fr 1fr 0.5fr 0.5fr 0.5fr"
-      gap="base"
-    >
-      <s-text type="strong">Type</s-text>
-      <s-text type="strong">Number</s-text>
-      <s-text type="strong">PO Number</s-text>
-      <s-text type="strong">Date</s-text>
-      <s-text type="strong">Status</s-text>
-      <s-text type="strong">Amount</s-text>
-      <s-text type="strong">Balance</s-text>
-      <s-text type="strong">View</s-text>
-      <s-text type="strong">Download</s-text>
-      <s-text type="strong">Pay</s-text>
-
-      {shouldShowNoFilterMatch && <s-text>No invoice match</s-text>}
-
-      {filteredInvoices.map((invoice) => (
-        <>
-          <s-text>{invoice.type}</s-text>
-          <s-text>{invoice.number}</s-text>
-          <s-text>{invoice.poNumber}</s-text>
-          <s-text>{invoice.date}</s-text>
-          <s-text>{invoice.status}</s-text>
-          <s-text>{invoice.amount}</s-text>
-          <s-text>{invoice.balance}</s-text>
-          <s-button onClick={() => viewInvoice(invoice)}>View</s-button>
-          <s-button onClick={() => downloadInvoice(invoice)}>Download</s-button>
-          <s-button
-            variant="primary"
-            disabled={!canPayInvoice(invoice)}
-            onClick={() => payInvoice(invoice)}
-          >
-            Pay
-          </s-button>
-        </>
-      ))}
-    </s-grid>
-  );
-}
-
-function InvoiceMobileList({
-  filteredInvoices,
-  shouldShowNoFilterMatch,
-  canPayInvoice,
-  viewInvoice,
-  downloadInvoice,
-  payInvoice,
-}) {
-  return (
-    <s-stack gap="base">
-      {shouldShowNoFilterMatch && <s-text>No invoice match</s-text>}
-
-      {filteredInvoices.map((invoice) => (
-        <InvoiceMobileCard
-          invoice={invoice}
-          canPayInvoice={canPayInvoice}
-          viewInvoice={viewInvoice}
-          downloadInvoice={downloadInvoice}
-          payInvoice={payInvoice}
-        />
-      ))}
-    </s-stack>
-  );
-}
-
-function InvoiceMobileCard({
-  invoice,
-  canPayInvoice,
-  viewInvoice,
-  downloadInvoice,
-  payInvoice,
-}) {
-  return (
-    <s-section>
       <s-stack gap="base">
-        <s-stack gap="small">
-          <s-text type="strong">{invoice.number}</s-text>
-          <s-text>{invoice.type}</s-text>
-        </s-stack>
-
-        <s-grid gridTemplateColumns="1fr 1fr" gap="base">
-          <InvoiceDetail label="PO Number" value={invoice.poNumber} />
-          <InvoiceDetail label="Date" value={invoice.date} />
-          <InvoiceDetail label="Status" value={invoice.status} />
-          <InvoiceDetail label="Amount" value={invoice.amount} />
-          <InvoiceDetail label="Balance" value={invoice.balance} />
+        <s-grid gridTemplateColumns="1fr 1fr 1fr 1fr" gap="base">
+          <InvoiceSummaryCard
+            label="61-90 DAYS"
+            value={data.aging.days61to90}
+          />
+          <InvoiceSummaryCard
+            label="31-60 DAYS"
+            value={data.aging.days31to60}
+          />
+          <InvoiceSummaryCard label="30 DAYS" value={data.aging.days30} />
+          <InvoiceSummaryCard label="TOTAL" value={data.aging.total} />
         </s-grid>
 
-        <s-stack direction="block" gap="base">
-          <s-button onClick={() => viewInvoice(invoice)}>View</s-button>
-          <s-button onClick={() => downloadInvoice(invoice)}>Download</s-button>
-          <s-button
-            variant="primary"
-            disabled={!canPayInvoice(invoice)}
-            onClick={() => payInvoice(invoice)}
-          >
-            Pay
-          </s-button>
-        </s-stack>
-      </s-stack>
-    </s-section>
-  );
-}
+        <s-grid gridTemplateColumns="2fr 1fr 1fr" gap="base">
+          <s-text-field
+            label="Search product or invoice number"
+            value={searchQuery}
+            onInput={(event) => setSearchQuery(getInputValue(event))}
+          />
+          <s-date-field
+            label="From Date"
+            value={fromDate}
+            onInput={(event) => setFromDate(getInputValue(event))}
+          />
+          <s-date-field
+            label="To Date"
+            value={toDate}
+            onInput={(event) => setToDate(getInputValue(event))}
+          />
+        </s-grid>
 
-function InvoiceDetail({label, value}) {
-  return (
-    <s-stack gap="small">
-      <s-text type="strong">{label}</s-text>
-      <s-text>{value || '-'}</s-text>
-    </s-stack>
+        <s-section>
+          <s-grid
+            gridTemplateColumns="1fr 1fr 2fr 1fr 1fr 1fr 1fr 0.5fr 0.5fr 0.5fr"
+            gap="base"
+          >
+            <s-text type="strong">Type</s-text>
+            <s-text type="strong">Number</s-text>
+            <s-text type="strong">PO Number</s-text>
+            <s-text type="strong">Date</s-text>
+            <s-text type="strong">Status</s-text>
+            <s-text type="strong">Amount</s-text>
+            <s-text type="strong">Balance</s-text>
+            <s-text type="strong">View</s-text>
+            <s-text type="strong">Download</s-text>
+            <s-text type="strong">Pay</s-text>
+
+            {shouldShowNoFilterMatch && <s-text>No invoice match</s-text>}
+
+            {filteredInvoices.map((invoice) => (
+              <>
+                <s-text>{invoice.type}</s-text>
+                <s-text>{invoice.number}</s-text>
+                <s-text>{invoice.poNumber}</s-text>
+                <s-text>{invoice.date}</s-text>
+                <s-text>{invoice.status}</s-text>
+                <s-text>{invoice.amount}</s-text>
+                <s-text>{invoice.balance}</s-text>
+                <s-button onClick={() => viewInvoice(invoice)}>View</s-button>
+                <s-button onClick={() => downloadInvoice(invoice)}>
+                  Download
+                </s-button>
+                <s-button
+                  variant="primary"
+                  disabled={!canPayInvoice(invoice)}
+                  onClick={() => payInvoice(invoice)}
+                >
+                  Pay
+                </s-button>
+              </>
+            ))}
+          </s-grid>
+        </s-section>
+      </s-stack>
+    </s-page>
   );
 }
 
