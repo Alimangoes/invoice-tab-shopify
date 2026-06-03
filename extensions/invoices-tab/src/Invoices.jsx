@@ -4,17 +4,23 @@ import {useEffect, useState} from 'preact/hooks';
 
 const BACKEND_URL =
   "https://invoice-tab-shopify.vercel.app/api/invoices";
-const MOBILE_LAYOUT_WIDTH = 760;
+const MOBILE_BREAKPOINT = 750;
 
 export default async () => {
   render(<Extension />, document.body);
 };
 
-function isMobileLayout() {
+function getViewportWidth() {
   return (
-    typeof globalThis.innerWidth === 'number' &&
-    globalThis.innerWidth <= MOBILE_LAYOUT_WIDTH
+    globalThis.visualViewport?.width ||
+    globalThis.document?.documentElement?.clientWidth ||
+    globalThis.innerWidth ||
+    MOBILE_BREAKPOINT + 1
   );
+}
+
+function shouldUseMobileLayout() {
+  return getViewportWidth() < MOBILE_BREAKPOINT;
 }
 
 function Extension() {
@@ -33,7 +39,7 @@ function Extension() {
   const [searchQuery, setSearchQuery] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const [mobileLayout, setMobileLayout] = useState(isMobileLayout());
+  const [mobileLayout, setMobileLayout] = useState(shouldUseMobileLayout());
 
   useEffect(() => {
     async function loadInvoices() {
@@ -73,7 +79,7 @@ function Extension() {
 
   useEffect(() => {
     function updateLayout() {
-      setMobileLayout(isMobileLayout());
+      setMobileLayout(shouldUseMobileLayout());
     }
 
     globalThis.addEventListener?.('resize', updateLayout);
@@ -254,7 +260,7 @@ function Extension() {
               payInvoice={payInvoice}
             />
           ) : (
-            <InvoiceDesktopTable
+            <InvoiceTable
               filteredInvoices={filteredInvoices}
               shouldShowNoFilterMatch={shouldShowNoFilterMatch}
               canPayInvoice={canPayInvoice}
@@ -269,7 +275,7 @@ function Extension() {
   );
 }
 
-function InvoiceDesktopTable({
+function InvoiceTable({
   filteredInvoices,
   shouldShowNoFilterMatch,
   canPayInvoice,
