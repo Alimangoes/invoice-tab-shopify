@@ -18,7 +18,7 @@ type OrderNode = {
   totalPriceSet: {
     shopMoney: Money;
   };
-  currentTotalPriceSet: {
+  totalOutstandingSet: {
     shopMoney: Money;
   };
   lineItems?: {
@@ -80,7 +80,7 @@ const orderQuery = `
               currencyCode
             }
           }
-          currentTotalPriceSet {
+          totalOutstandingSet {
             shopMoney {
               amount
               currencyCode
@@ -405,7 +405,7 @@ export async function loader({request}: LoaderFunctionArgs) {
     }
 
     const amount = order.totalPriceSet.shopMoney;
-    const balance = order.currentTotalPriceSet.shopMoney;
+    const balance = order.totalOutstandingSet.shopMoney;
     const lines = [
       `Invoice ${order.name}`,
       `Date: ${order.createdAt.slice(0, 10)}`,
@@ -438,11 +438,11 @@ export async function loader({request}: LoaderFunctionArgs) {
 
   const invoices = orderNodes.map((order) => {
     const amount = order.totalPriceSet.shopMoney;
-    const balance = order.currentTotalPriceSet.shopMoney;
+    const balance = order.totalOutstandingSet.shopMoney;
     const isPaid = ['PAID', 'VOIDED'].includes(
       String(order.displayFinancialStatus).toUpperCase(),
     );
-    const balanceAmount = isPaid ? '0.00' : balance.amount;
+    const balanceAmount = moneyAmount(balance.amount).toFixed(2);
     const checkoutUrl = isPaid ? null : buildOrderCheckoutUrl(shop, order);
 
     return {
@@ -508,3 +508,4 @@ export async function loader({request}: LoaderFunctionArgs) {
     },
   );
 }
+
