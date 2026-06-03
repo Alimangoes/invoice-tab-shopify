@@ -200,14 +200,18 @@ function Extension() {
           </s-grid>
 
           <s-grid
-            gridTemplateColumns="@container (inline-size > 779px) 2fr 1fr 1fr, 1fr"
+            gridTemplateColumns="@container (inline-size > 779px) 2fr 1fr 1fr, 1fr 1fr"
             gap="base"
           >
-            <s-text-field
-              label="Search product or invoice number"
-              value={searchQuery}
-              onInput={(event) => setSearchQuery(getInputValue(event))}
-            />
+            <s-grid-item
+              gridColumn="@container (inline-size > 779px) auto, span 2"
+            >
+              <s-text-field
+                label="Search product or invoice number"
+                value={searchQuery}
+                onInput={(event) => setSearchQuery(getInputValue(event))}
+              />
+            </s-grid-item>
             <s-date-field
               label="From Date"
               value={fromDate}
@@ -274,7 +278,7 @@ function Extension() {
 function InvoiceSummaryCard({label, value}) {
   return (
     <s-section>
-      <s-stack gap="small">
+      <s-stack gap="small" alignItems="center">
         <s-text>{label}</s-text>
         <s-divider />
         <s-heading>{value}</s-heading>
