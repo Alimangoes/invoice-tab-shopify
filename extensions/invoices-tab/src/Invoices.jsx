@@ -4,24 +4,10 @@ import {useEffect, useState} from 'preact/hooks';
 
 const BACKEND_URL =
   "https://invoice-tab-shopify.vercel.app/api/invoices";
-const MOBILE_BREAKPOINT = 750;
 
 export default async () => {
   render(<Extension />, document.body);
 };
-
-function getViewportWidth() {
-  return (
-    globalThis.visualViewport?.width ||
-    globalThis.document?.documentElement?.clientWidth ||
-    globalThis.innerWidth ||
-    MOBILE_BREAKPOINT + 1
-  );
-}
-
-function shouldUseMobileLayout() {
-  return getViewportWidth() < MOBILE_BREAKPOINT;
-}
 
 function Extension() {
   const [data, setData] = useState({
@@ -39,7 +25,6 @@ function Extension() {
   const [searchQuery, setSearchQuery] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const [mobileLayout, setMobileLayout] = useState(shouldUseMobileLayout());
 
   useEffect(() => {
     async function loadInvoices() {
@@ -75,21 +60,6 @@ function Extension() {
     }
 
     loadInvoices();
-  }, []);
-
-  useEffect(() => {
-    function updateLayout() {
-      setMobileLayout(shouldUseMobileLayout());
-    }
-
-    globalThis.addEventListener?.('resize', updateLayout);
-    globalThis.visualViewport?.addEventListener('resize', updateLayout);
-    updateLayout();
-
-    return () => {
-      globalThis.removeEventListener?.('resize', updateLayout);
-      globalThis.visualViewport?.removeEventListener('resize', updateLayout);
-    };
   }, []);
 
   function getBalanceValue(invoice) {
@@ -211,66 +181,70 @@ function Extension() {
 
   return (
     <s-page heading="Invoices">
-      <s-stack gap="base">
-        <s-grid
-          gridTemplateColumns={mobileLayout ? '1fr 1fr' : '1fr 1fr 1fr 1fr'}
-          gap="base"
-        >
-          <InvoiceSummaryCard
-            label="61-90 DAYS"
-            value={data.aging.days61to90}
-          />
-          <InvoiceSummaryCard
-            label="31-60 DAYS"
-            value={data.aging.days31to60}
-          />
-          <InvoiceSummaryCard label="30 DAYS" value={data.aging.days30} />
-          <InvoiceSummaryCard label="TOTAL" value={data.aging.total} />
-        </s-grid>
-
-        <s-grid
-          gridTemplateColumns={mobileLayout ? '1fr' : '2fr 1fr 1fr'}
-          gap="base"
-        >
-          <s-text-field
-            label="Search product or invoice number"
-            value={searchQuery}
-            onInput={(event) => setSearchQuery(getInputValue(event))}
-          />
-          <s-date-field
-            label="From Date"
-            value={fromDate}
-            onInput={(event) => setFromDate(getInputValue(event))}
-          />
-          <s-date-field
-            label="To Date"
-            value={toDate}
-            onInput={(event) => setToDate(getInputValue(event))}
-          />
-        </s-grid>
-
-        <s-section>
-          {mobileLayout ? (
-            <InvoiceMobileList
-              filteredInvoices={filteredInvoices}
-              shouldShowNoFilterMatch={shouldShowNoFilterMatch}
-              canPayInvoice={canPayInvoice}
-              viewInvoice={viewInvoice}
-              downloadInvoice={downloadInvoice}
-              payInvoice={payInvoice}
+      <s-query-container>
+        <s-stack gap="base">
+          <s-grid
+            gridTemplateColumns="@container (inline-size < 750px) 1fr 1fr, 1fr 1fr 1fr 1fr"
+            gap="base"
+          >
+            <InvoiceSummaryCard
+              label="61-90 DAYS"
+              value={data.aging.days61to90}
             />
-          ) : (
-            <InvoiceTable
-              filteredInvoices={filteredInvoices}
-              shouldShowNoFilterMatch={shouldShowNoFilterMatch}
-              canPayInvoice={canPayInvoice}
-              viewInvoice={viewInvoice}
-              downloadInvoice={downloadInvoice}
-              payInvoice={payInvoice}
+            <InvoiceSummaryCard
+              label="31-60 DAYS"
+              value={data.aging.days31to60}
             />
-          )}
-        </s-section>
-      </s-stack>
+            <InvoiceSummaryCard label="30 DAYS" value={data.aging.days30} />
+            <InvoiceSummaryCard label="TOTAL" value={data.aging.total} />
+          </s-grid>
+
+          <s-grid
+            gridTemplateColumns="@container (inline-size < 750px) 1fr, 2fr 1fr 1fr"
+            gap="base"
+          >
+            <s-text-field
+              label="Search product or invoice number"
+              value={searchQuery}
+              onInput={(event) => setSearchQuery(getInputValue(event))}
+            />
+            <s-date-field
+              label="From Date"
+              value={fromDate}
+              onInput={(event) => setFromDate(getInputValue(event))}
+            />
+            <s-date-field
+              label="To Date"
+              value={toDate}
+              onInput={(event) => setToDate(getInputValue(event))}
+            />
+          </s-grid>
+
+          <s-section>
+            <s-box display="@container (inline-size < 750px) none, auto">
+              <InvoiceTable
+                filteredInvoices={filteredInvoices}
+                shouldShowNoFilterMatch={shouldShowNoFilterMatch}
+                canPayInvoice={canPayInvoice}
+                viewInvoice={viewInvoice}
+                downloadInvoice={downloadInvoice}
+                payInvoice={payInvoice}
+              />
+            </s-box>
+
+            <s-box display="@container (inline-size < 750px) auto, none">
+              <InvoiceMobileList
+                filteredInvoices={filteredInvoices}
+                shouldShowNoFilterMatch={shouldShowNoFilterMatch}
+                canPayInvoice={canPayInvoice}
+                viewInvoice={viewInvoice}
+                downloadInvoice={downloadInvoice}
+                payInvoice={payInvoice}
+              />
+            </s-box>
+          </s-section>
+        </s-stack>
+      </s-query-container>
     </s-page>
   );
 }
