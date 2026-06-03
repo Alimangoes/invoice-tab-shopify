@@ -199,30 +199,25 @@ function Extension() {
             <InvoiceSummaryCard label="TOTAL" value={data.aging.total} />
           </s-grid>
 
-          <s-grid
-            gridTemplateColumns="@container (inline-size > 779px) 2fr 1fr 1fr, 1fr 1fr"
-            gap="base"
-          >
-            <s-grid-item
-              gridColumn="@container (inline-size > 779px) auto, span 2"
-            >
-              <s-text-field
-                label="Search product or invoice number"
-                value={searchQuery}
-                onInput={(event) => setSearchQuery(getInputValue(event))}
+          <s-stack gap="base">
+            <s-text-field
+              label="Search product or invoice number"
+              value={searchQuery}
+              onInput={(event) => setSearchQuery(getInputValue(event))}
+            />
+            <s-grid gridTemplateColumns="1fr 1fr" gap="base">
+              <s-date-field
+                label="From Date"
+                value={fromDate}
+                onInput={(event) => setFromDate(getInputValue(event))}
               />
-            </s-grid-item>
-            <s-date-field
-              label="From Date"
-              value={fromDate}
-              onInput={(event) => setFromDate(getInputValue(event))}
-            />
-            <s-date-field
-              label="To Date"
-              value={toDate}
-              onInput={(event) => setToDate(getInputValue(event))}
-            />
-          </s-grid>
+              <s-date-field
+                label="To Date"
+                value={toDate}
+                onInput={(event) => setToDate(getInputValue(event))}
+              />
+            </s-grid>
+          </s-stack>
 
           <s-section>
             <s-scroll-box inlineSize="100%">
