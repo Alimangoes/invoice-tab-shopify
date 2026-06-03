@@ -87,6 +87,7 @@ function Extension() {
       invoice.status,
       invoice.amount,
       invoice.balance,
+      ...(invoice.products ?? []),
     ]
       .join(' ')
       .toLowerCase()

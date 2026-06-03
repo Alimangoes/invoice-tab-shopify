@@ -455,6 +455,7 @@ export async function loader({request}: LoaderFunctionArgs) {
       status: order.displayFinancialStatus,
       amount: `${amount.currencyCode} ${amount.amount}`,
       balance: `${balance.currencyCode} ${balanceAmount}`,
+      products: (order.lineItems?.nodes ?? []).map((item) => item.title),
       statusPageUrl: order.statusPageUrl,
       checkoutUrl,
       sufioViewUrl: buildSufioInvoiceUrl(shop, order, '/apps/sufio/invoice/'),
