@@ -468,20 +468,15 @@ export async function loader({request}: LoaderFunctionArgs) {
 
   const aging = orderNodes.reduce(
     (totals, order) => {
-      const isPaid = ['PAID', 'VOIDED'].includes(
-        String(order.displayFinancialStatus).toUpperCase(),
-      );
-      const balance = isPaid
-        ? 0
-        : moneyAmount(order.currentTotalPriceSet.shopMoney.amount);
+      const amount = moneyAmount(order.totalPriceSet.shopMoney.amount);
       const age = daysSince(order.createdAt);
 
       if (age <= 30) {
-        totals.days30 += balance;
+        totals.days30 += amount;
       } else if (age <= 60) {
-        totals.days31to60 += balance;
+        totals.days31to60 += amount;
       } else if (age <= 90) {
-        totals.days61to90 += balance;
+        totals.days61to90 += amount;
       }
 
       return totals;
@@ -493,7 +488,7 @@ export async function loader({request}: LoaderFunctionArgs) {
     },
   );
   const currencyCode =
-    orderNodes[0]?.currentTotalPriceSet.shopMoney.currencyCode ?? 'AUD';
+    orderNodes[0]?.totalPriceSet.shopMoney.currencyCode ?? 'AUD';
   const totalBalance =
     aging.days61to90 + aging.days31to60 + aging.days30;
 
