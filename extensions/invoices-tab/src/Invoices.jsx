@@ -181,81 +181,113 @@ function Extension() {
 
   return (
     <s-page heading="Invoices">
-      <s-stack gap="base">
-        <s-grid gridTemplateColumns="1fr 1fr 1fr 1fr" gap="base">
-          <InvoiceSummaryCard
-            label="61-90 DAYS"
-            value={data.aging.days61to90}
-          />
-          <InvoiceSummaryCard
-            label="31-60 DAYS"
-            value={data.aging.days31to60}
-          />
-          <InvoiceSummaryCard label="30 DAYS" value={data.aging.days30} />
-          <InvoiceSummaryCard label="TOTAL" value={data.aging.total} />
-        </s-grid>
-
-        <s-grid gridTemplateColumns="2fr 1fr 1fr" gap="base">
-          <s-text-field
-            label="Search product or invoice number"
-            value={searchQuery}
-            onInput={(event) => setSearchQuery(getInputValue(event))}
-          />
-          <s-date-field
-            label="From Date"
-            value={fromDate}
-            onInput={(event) => setFromDate(getInputValue(event))}
-          />
-          <s-date-field
-            label="To Date"
-            value={toDate}
-            onInput={(event) => setToDate(getInputValue(event))}
-          />
-        </s-grid>
-
-        <s-section>
+      <s-query-container>
+        <s-stack gap="base">
           <s-grid
-            gridTemplateColumns="1fr 1fr 2fr 1fr 1fr 1fr 1fr 0.5fr 0.5fr 0.5fr"
+            gridTemplateColumns="@container (inline-size < 779px) 1fr, 1fr 1fr 1fr 1fr"
             gap="base"
           >
-            <s-text type="strong">Type</s-text>
-            <s-text type="strong">Number</s-text>
-            <s-text type="strong">PO Number</s-text>
-            <s-text type="strong">Date</s-text>
-            <s-text type="strong">Status</s-text>
-            <s-text type="strong">Amount</s-text>
-            <s-text type="strong">Balance</s-text>
-            <s-text type="strong">View</s-text>
-            <s-text type="strong">Download</s-text>
-            <s-text type="strong">Pay</s-text>
-
-            {shouldShowNoFilterMatch && <s-text>No invoice match</s-text>}
-
-            {filteredInvoices.map((invoice) => (
-              <>
-                <s-text>{invoice.type}</s-text>
-                <s-text>{invoice.number}</s-text>
-                <s-text>{invoice.poNumber}</s-text>
-                <s-text>{invoice.date}</s-text>
-                <s-text>{invoice.status}</s-text>
-                <s-text>{invoice.amount}</s-text>
-                <s-text>{invoice.balance}</s-text>
-                <s-button onClick={() => viewInvoice(invoice)}>View</s-button>
-                <s-button onClick={() => downloadInvoice(invoice)}>
-                  Download
-                </s-button>
-                <s-button
-                  variant="primary"
-                  disabled={!canPayInvoice(invoice)}
-                  onClick={() => payInvoice(invoice)}
-                >
-                  Pay
-                </s-button>
-              </>
-            ))}
+            <InvoiceSummaryCard
+              label="61-90 DAYS"
+              value={data.aging.days61to90}
+            />
+            <InvoiceSummaryCard
+              label="31-60 DAYS"
+              value={data.aging.days31to60}
+            />
+            <InvoiceSummaryCard label="30 DAYS" value={data.aging.days30} />
+            <InvoiceSummaryCard label="TOTAL" value={data.aging.total} />
           </s-grid>
-        </s-section>
-      </s-stack>
+
+          <s-box display="@container (inline-size < 779px) none, auto">
+            <s-grid gridTemplateColumns="2fr 1fr 1fr" gap="base">
+              <s-text-field
+                label="Search product or invoice number"
+                value={searchQuery}
+                onInput={(event) => setSearchQuery(getInputValue(event))}
+              />
+              <s-date-field
+                label="From Date"
+                value={fromDate}
+                onInput={(event) => setFromDate(getInputValue(event))}
+              />
+              <s-date-field
+                label="To Date"
+                value={toDate}
+                onInput={(event) => setToDate(getInputValue(event))}
+              />
+            </s-grid>
+          </s-box>
+
+          <s-box display="@container (inline-size < 779px) auto, none">
+            <s-stack gap="base">
+              <s-text-field
+                label="Search product or invoice number"
+                value={searchQuery}
+                onInput={(event) => setSearchQuery(getInputValue(event))}
+              />
+              <s-grid gridTemplateColumns="1fr 1fr" gap="base">
+                <s-date-field
+                  label="From Date"
+                  value={fromDate}
+                  onInput={(event) => setFromDate(getInputValue(event))}
+                />
+                <s-date-field
+                  label="To Date"
+                  value={toDate}
+                  onInput={(event) => setToDate(getInputValue(event))}
+                />
+              </s-grid>
+            </s-stack>
+          </s-box>
+
+          <s-section>
+            <s-scroll-box inlineSize="100%">
+              <s-grid
+                gridTemplateColumns="1fr 1fr 2fr 1fr 1fr 1fr 1fr 0.5fr 0.5fr 0.5fr"
+                minInlineSize="900px"
+                gap="base"
+              >
+                <s-text type="strong">Type</s-text>
+                <s-text type="strong">Number</s-text>
+                <s-text type="strong">PO Number</s-text>
+                <s-text type="strong">Date</s-text>
+                <s-text type="strong">Status</s-text>
+                <s-text type="strong">Amount</s-text>
+                <s-text type="strong">Balance</s-text>
+                <s-text type="strong">View</s-text>
+                <s-text type="strong">Download</s-text>
+                <s-text type="strong">Pay</s-text>
+
+                {shouldShowNoFilterMatch && <s-text>No invoice match</s-text>}
+
+                {filteredInvoices.map((invoice) => (
+                  <>
+                    <s-text>{invoice.type}</s-text>
+                    <s-text>{invoice.number}</s-text>
+                    <s-text>{invoice.poNumber}</s-text>
+                    <s-text>{invoice.date}</s-text>
+                    <s-text>{invoice.status}</s-text>
+                    <s-text>{invoice.amount}</s-text>
+                    <s-text>{invoice.balance}</s-text>
+                    <s-button onClick={() => viewInvoice(invoice)}>View</s-button>
+                    <s-button onClick={() => downloadInvoice(invoice)}>
+                      Download
+                    </s-button>
+                    <s-button
+                      variant="primary"
+                      disabled={!canPayInvoice(invoice)}
+                      onClick={() => payInvoice(invoice)}
+                    >
+                      Pay
+                    </s-button>
+                  </>
+                ))}
+              </s-grid>
+            </s-scroll-box>
+          </s-section>
+        </s-stack>
+      </s-query-container>
     </s-page>
   );
 }
