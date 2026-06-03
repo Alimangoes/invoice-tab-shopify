@@ -83,7 +83,6 @@ function Extension() {
       invoice.type,
       invoice.number,
       invoice.poNumber,
-      invoice.date,
       invoice.status,
       invoice.amount,
       invoice.balance,
