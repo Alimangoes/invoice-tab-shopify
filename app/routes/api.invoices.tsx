@@ -15,6 +15,9 @@ type OrderNode = {
   createdAt: string;
   displayFinancialStatus: string;
   statusPageUrl?: string | null;
+  paymentCollectionDetails?: {
+    additionalPaymentCollectionUrl?: string | null;
+  } | null;
   totalPriceSet: {
     shopMoney: Money;
   };
@@ -74,6 +77,9 @@ const orderQuery = `
           createdAt
           displayFinancialStatus
           statusPageUrl
+          paymentCollectionDetails {
+            additionalPaymentCollectionUrl
+          }
           totalPriceSet {
             shopMoney {
               amount
@@ -443,7 +449,10 @@ export async function loader({request}: LoaderFunctionArgs) {
       String(order.displayFinancialStatus).toUpperCase(),
     );
     const balanceAmount = moneyAmount(balance.amount).toFixed(2);
-    const checkoutUrl = isPaid ? null : buildOrderCheckoutUrl(shop, order);
+    const checkoutUrl = isPaid
+      ? null
+      : order.paymentCollectionDetails?.additionalPaymentCollectionUrl ||
+        buildOrderCheckoutUrl(shop, order);
 
     return {
       id: order.id,
