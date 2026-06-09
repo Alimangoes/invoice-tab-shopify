@@ -120,7 +120,7 @@ function buildOrderCheckoutUrl(shop: string, order: OrderNode) {
     return null;
   }
 
-  return `https://${shop}/cart/${cartLines.join(',')}?checkout`;
+  return `https://${shop}/cart/${cartLines.join(',')}?checkout&step=payment_method`;
 }
 
 function buildSufioInvoiceUrl(shop: string, order: OrderNode, path: string) {
