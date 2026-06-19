@@ -40,11 +40,6 @@ type OrderNode = {
 
 type OrdersResponse = {
   data?: {
-    shop?: {
-      primaryDomain?: {
-        url?: string | null;
-      } | null;
-    };
     customer?: {
       orders?: {
         nodes: OrderNode[];
@@ -71,11 +66,6 @@ const corsHeaders = {
 const orderQuery = `
   #graphql
   query GetCustomerOrders($customerId: ID!) {
-    shop {
-      primaryDomain {
-        url
-      }
-    }
     customer(id: $customerId) {
       id
       orders(first: 20, sortKey: PROCESSED_AT, reverse: true) {
@@ -145,9 +135,8 @@ function buildSufioInvoiceUrl(shop: string, order: OrderNode, path: string) {
     id: order.legacyResourceId,
     number: orderNumber,
   });
-  const shopUrl = shop.startsWith('http') ? shop : `https://${shop}`;
 
-  return `${shopUrl}${path}?${params.toString()}`;
+  return `https://${shop}${path}?${params.toString()}`;
 }
 
 function moneyAmount(value: string) {
@@ -399,8 +388,6 @@ export async function loader({request}: LoaderFunctionArgs) {
   }
 
   const orderNodes = result.data?.customer?.orders?.nodes ?? [];
-  const storefrontUrl =
-    result.data?.shop?.primaryDomain?.url || `https://${shop}`;
   const url = new URL(request.url);
   const downloadOrderId = url.searchParams.get('downloadOrderId');
 
@@ -480,13 +467,9 @@ export async function loader({request}: LoaderFunctionArgs) {
       products: (order.lineItems?.nodes ?? []).map((item) => item.title),
       statusPageUrl: order.statusPageUrl,
       checkoutUrl,
-      sufioViewUrl: buildSufioInvoiceUrl(
-        storefrontUrl,
-        order,
-        '/apps/sufio/invoice/',
-      ),
+      sufioViewUrl: buildSufioInvoiceUrl(shop, order, '/apps/sufio/invoice/'),
       sufioDownloadUrl: buildSufioInvoiceUrl(
-        storefrontUrl,
+        shop,
         order,
         '/apps/sufio/invoice/download/',
       ),
