@@ -119,8 +119,7 @@ function Extension() {
 
   function viewInvoice(invoice) {
     navigation.navigate(
-      invoice.sufioDownloadUrl ||
-        invoice.statusPageUrl ||
+      invoice.statusPageUrl ||
         invoice.sufioViewUrl ||
         `/orders/${invoice.legacyResourceId}`,
     );
