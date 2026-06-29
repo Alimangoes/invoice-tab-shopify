@@ -119,13 +119,18 @@ function Extension() {
 
   function viewInvoice(invoice) {
     navigation.navigate(
-      invoice.statusPageUrl ||
-        invoice.sufioViewUrl ||
+      invoice.sufioViewUrl ||
+        invoice.statusPageUrl ||
         `/orders/${invoice.legacyResourceId}`,
     );
   }
 
   async function downloadInvoice(invoice) {
+    if (invoice.sufioDownloadUrl) {
+      navigation.navigate(invoice.sufioDownloadUrl);
+      return;
+    }
+
     const token = await shopify.sessionToken.get();
     const url = `${BACKEND_URL}?downloadOrderId=${encodeURIComponent(invoice.id)}`;
     const response = await fetch(url, {
@@ -135,11 +140,6 @@ function Extension() {
     });
 
     if (!response.ok) {
-      if (invoice.sufioDownloadUrl) {
-        navigation.navigate(invoice.sufioDownloadUrl);
-        return;
-      }
-
       shopify.toast.show('Invoice download is not available');
       return;
     }
